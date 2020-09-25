@@ -44,27 +44,27 @@ class INIparser (private var fileName: String) {
     }
 
     @Throws(ParserException::class)
-    fun getValue(fieldName: String, key: String) {
+    fun getValue(fieldName: String, key: String): Any {
         if (! findField(fieldName)) throw ParserException("Field $fieldName not found")
         
         for (item: Field in items) {
             if (item.getName() == fieldName) {
-                item.getValue(key)
-                break
+                return item.getValue(key)
             }
         }
+        throw ParserException("Value not found for: key '$key', fieldName $fieldName")
     }
 
     @Throws(ParserException::class)
-    fun getValueType(fieldName: String, key: String, type: String) {
+    fun getValueType(fieldName: String, key: String, type: String): Any {
         if (! findField(fieldName)) throw ParserException("Field $fieldName not found")
 
         for (item: Field in items) {
             if (item.getName() == fieldName) {
-                item.getValueType(key, type)
-                break
+                return item.getValueType(key, type)
             }
         }
+        throw ParserException("Key '$key' with valueType $type not found")
     }
 
     //loads parsed INI file to the vector of Fields
@@ -97,11 +97,16 @@ class INIparser (private var fileName: String) {
                     i++
                     c = item[i]
                 }
+                if (fieldName == "") throw ParserException("File $fileName is invalid ini")
                 currentField = Field(fieldName)
             }
             else {
+                if (currentField.getName() == "default") {
+                    throw ParserException("File $fileName is invalid ini")
+                }
                 val key: String = readKey(item)
                 val value: String = readValue(item)
+                if (key == "" || value == "") throw ParserException("File $fileName is invalid ini")
                 currentField.add(key, value)
             }
         }
@@ -134,8 +139,10 @@ class INIparser (private var fileName: String) {
     private fun readKey(str: String): String {
         var key: String = ""
         var i: Int = 0
-        while (str[i] != ' ') {
-            key += str[i].toString()
+        while (i < str.length) {
+            if (str[i] == '=') break
+            if (str[i] == ' ') throw ParserException("File $fileName is invalid ini")
+            key += str[i]
             i++
         }
         return key
@@ -144,13 +151,10 @@ class INIparser (private var fileName: String) {
     private fun readValue(str: String): String {
         var value: String = ""
         var i: Int = 0
-        var spaceCount: Int = 0
         var flag: Int = 0
-        while (i != str.length) {
-            if (str[i] == ' ') spaceCount++
-            if (spaceCount > 2) break
+        while (i < str.length && str[i] != ' ' && str[i] != ';') {
             if (flag == 1) value += str[i]
-            if (spaceCount == 2) flag = 1
+            if (str[i] == '=') flag = 1
             i++
         }
         return value

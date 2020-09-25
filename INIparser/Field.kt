@@ -34,21 +34,22 @@ class Field (private var fieldName: String) {
 
     //prints value using key
     @Throws(ParserException::class)
-    fun getValue(key: String) {
+    fun getValue(key: String): Any {
         if (! items.containsKey(key)) throw ParserException("Key $key not found")
-        println("${items[key]}")
+        return items[key] ?: throw ParserException("Null value: getValue, $key")
     }
 
     @Throws(ParserException::class)
-    fun getValueType(key: String, type: String) {
+    fun getValueType(key: String, type: String): Any {
         if (! items.containsKey(key)) throw ParserException("Key $key not found")
 
-        when {
-            type == "Int" && items[key] is Int -> println("${items[key]}")
+        val value: Any = items[key] ?: throw ParserException("Null value: getValueType, $key, $type")
+        return when {
+            type == "Int" && items[key] is Int -> value
 
-            type == "Double" && items[key] is Double -> println("${items[key]}")
+            type == "Double" && items[key] is Double -> value
 
-            type == "String" && items[key] is String -> println("${items[key]}")
+            type == "String" && items[key] is String -> value
 
             else -> throw ParserException("Desired type & value mismatch")
         }
@@ -69,7 +70,7 @@ class Field (private var fieldName: String) {
         val file = File(outFileName)
         file.appendText(text = "[$fieldName]\n")
         for (item in items) {
-            file.appendText(text = "${item.key} = ${item.value}\n")
+            file.appendText(text = "${item.key}=${item.value}\n")
         }
     }
 

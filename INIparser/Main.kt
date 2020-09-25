@@ -1,12 +1,12 @@
 
 fun main () {
     //some test code
-    val iniParser = INIparser(fileName = "src/example.ini")
+    val iniParser = INIparser(fileName = "src/example2.ini")
     iniParser.load()
 
-    iniParser.getValueType("ADC_DEV", "BufferLenSeconds", "Double")
+    println("${iniParser.getValueType("ADC_DEV", "BufferLenSeconds", "Double")}")
     iniParser.edit("ADC_DEV", "BufferLenSeconds", "0.25")
-    iniParser.getValue("ADC_DEV", "BufferLenSeconds")
+    println("${iniParser.getValue("ADC_DEV", "BufferLenSeconds")}")
 
     iniParser.putToFile("src/out.ini")
 
